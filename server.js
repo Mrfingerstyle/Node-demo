@@ -21,41 +21,34 @@ var server = http.createServer(function(request, response){
 
     console.log('有个傻子发请求过来啦！路径（带查询参数）为：' + pathWithQuery)
 
-    if(path === '/'){
-        response.statusCode = 200
-        console.log(method);
-        console.log(pathWithQuery);
-        console.log(request.headers);
-        response.setHeader('Content-Type', 'text/html;charset=utf-8')
-        response.write(`
-            <!DOCTYPE html>
-            <head>
-                <link rel="stylesheet" href="/style.css">
-            </head>
-            <body>
-                <h1>标题</h1>
-                <script src='/y'></script>
-            </body>
-            </html>
-        `)
-        response.end()
-    } else if(path === '/style.css'){
-        response.statusCode = 200
-        response.setHeader('Content-Type', 'text/css;charset=utf-8')
-        response.write(`body{color: red;}`)
-        response.end()
-    } else if(path === '/y'){
-        response.statusCode = 300
-        response.setHeader('Content-Type', 'text/javascript;charset=utf-8')
-        response.write(`console.log('这是js内容')`)
-        response.end()
-    } else {
-        response.statusCode = 404
-        response.setHeader('Content-Type', 'text/html;charset=utf-8')
-        response.write(`你输入的路径不存在对应的内容`)
-        response.end()
-    }
+    response.statusCode = 200
+    // 解决请求头文件类型的问题
+    // 获取请求路径的后缀
 
+    // 默认首页
+    const filePath = path === '/' ? '/index.html' : path
+    
+    
+    const index = filePath.lastIndexOf('.')
+    const suffix = filePath.substring(index)
+    console.log(suffix);
+    const fileType = {
+        '.html': 'text/html',
+        '.css': 'text/css',
+        '.js': 'text/javascript',
+        'png': 'image/png',
+        'jpg': 'image/jpeg'
+    }
+    response.setHeader('Content-Type', `${fileType[suffix] || 'text/html'};charset=utf-8`)
+    let content
+    try {
+        content = fs.readFileSync(`./public${filePath}`)
+    } catch(error) {
+        content = '文件不存在'
+        response.statusCode = 404
+    }
+    response.write(content)
+    response.end()
     /******** 代码结束，下面不要看 ************/
 })
 
